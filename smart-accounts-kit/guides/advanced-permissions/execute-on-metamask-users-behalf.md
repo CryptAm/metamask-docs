@@ -1,5 +1,5 @@
 ---
-description: Use Advanced Permissions (ERC-7115) to perform executions on a MetaMask user's behalf.
+description: Use Advanced Permissions (ERC-7715) to perform executions on a MetaMask user's behalf.
 sidebar_label: Execute on a MetaMask user's behalf
 keywords: [execution, smart account, create, redeem, delegation, erc 7715, 7715, session account, advanced permissions]
 ---
@@ -9,7 +9,7 @@ import TabItem from "@theme/TabItem";
 
 # Perform executions on a MetaMask user's behalf
 
-[Advanced Permissions (ERC-7115)](../../concepts/advanced-permissions.md) are fine-grained permissions that your dapp can request from a MetaMask user to execute transactions on their 
+[Advanced Permissions (ERC-7715)](../../concepts/advanced-permissions.md) are fine-grained permissions that your dapp can request from a MetaMask user to execute transactions on their 
 behalf. For example, a user can grant your dapp permission to spend 10 USDC per day to buy ETH over the course 
 of a month. Once the permission is granted, your dapp can use the allocated 10 USDC each day to 
 purchase ETH directly from the MetaMask user's account.
@@ -106,7 +106,7 @@ If the user has not yet been upgraded, you can handle the upgrade [programmatica
 user to [switch to a smart account manually](https://support.metamask.io/configure/accounts/switch-to-or-revert-from-a-smart-account/#how-to-switch-to-a-metamask-smart-account).
 
 :::info Why is a Smart Account upgrade is required?
-MetaMask's Advanced Permissions (ERC-7115) implementation requires the user to be upgraded to a MetaMask 
+MetaMask's Advanced Permissions (ERC-7715) implementation requires the user to be upgraded to a MetaMask 
 Smart Account because, under the hood, you're requesting a signature for an [ERC-7710 delegation](../../concepts/delegation/index.md).
 ERC-7710 delegation is one of the core features supported only by MetaMask Smart Accounts.
 :::
@@ -163,14 +163,9 @@ const tokenAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
 const grantedPermissions = await walletClient.requestExecutionPermissions([{
   chainId: chain.id,
   expiry,
-  signer: {
-    type: "account",
-    data: {
-      // The requested permissions will granted to the
-      // session account.
-      address: sessionAccount.address,
-    },
-  },
+  // The requested permissions will granted to the
+  // session account.
+  to: sessionAccount.address,
   permission: {
     type: "erc20-token-periodic",
     data: {
@@ -181,8 +176,8 @@ const grantedPermissions = await walletClient.requestExecutionPermissions([{
       periodDuration: 86400,
       justification: "Permission to transfer 10 USDC every day",
     },
+    isAdjustmentAllowed: true,
   },
-  isAdjustmentAllowed: true,
 }]);
 ```
 
@@ -241,7 +236,7 @@ To redeem the permissions, use the client action based on your session account t
 A smart account uses the Bundler Client's `sendUserOperationWithDelegation` action,
 and an EOA uses the Wallet Client's `sendTransactionWithDelegation` action.
 
-See the [`sendUserOperationWithDelegation`](../../reference/advanced-permissions/bundler-client.md#senduseroperationwithdelegation) and [`sendTransactionWithDelegation`](../../reference/advanced-permissions/wallet-client.md#sendtransactionwithdelegation) API reference for more information.
+See the [`sendUserOperationWithDelegation`](../../reference/erc7710/bundler-client.md#senduseroperationwithdelegation) and [`sendTransactionWithDelegation`](../../reference/erc7710/wallet-client.md#sendtransactionwithdelegation) API reference for more information.
 
 <Tabs>
 <TabItem value="Smart account">
@@ -250,13 +245,13 @@ See the [`sendUserOperationWithDelegation`](../../reference/advanced-permissions
 import { calldata } from "./config.ts";
 
 // These properties must be extracted from the permission response.
-const permissionsContext = grantedPermissions[0].context;
+const permissionContext = grantedPermissions[0].context;
 const delegationManager = grantedPermissions[0].signerMeta.delegationManager;
 
 // USDC address on Ethereum Sepolia.
 const tokenAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
 
-// Calls without permissionsContext and delegationManager will be executed 
+// Calls without permissionContext and delegationManager will be executed 
 // as a normal user operation.
 const userOperationHash = await bundlerClient.sendUserOperationWithDelegation({
   publicClient,
@@ -265,7 +260,7 @@ const userOperationHash = await bundlerClient.sendUserOperationWithDelegation({
     {
       to: tokenAddress,
       data: calldata,
-      permissionsContext,
+      permissionContext,
       delegationManager,
     },
   ],
@@ -282,7 +277,7 @@ const userOperationHash = await bundlerClient.sendUserOperationWithDelegation({
 import { calldata } from "./config.ts";
 
 // These properties must be extracted from the permission response.
-const permissionsContext = grantedPermissions[0].context;
+const permissionContext = grantedPermissions[0].context;
 const delegationManager = grantedPermissions[0].signerMeta.delegationManager;
 
 // USDC address on Ethereum Sepolia.
@@ -291,7 +286,7 @@ const tokenAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
 const transactionHash = await sessionAccountWalletClient.sendTransactionWithDelegation({
   to: tokenAddress,
   data: calldata,
-  permissionsContext,
+  permissionContext,
   delegationManager,
 });
 ```
@@ -315,5 +310,6 @@ export const calldata = encodeFunctionData({
 
 ## Next steps
 
-See how to configure different [ERC-20 token permissions](use-permissions/erc20-token.md) and
+- See how to [get the supported execution permissions](get-supported-permissions.md).
+- See how to configure different [ERC-20 token permissions](use-permissions/erc20-token.md) and
 [native token permissions](use-permissions/native-token.md).

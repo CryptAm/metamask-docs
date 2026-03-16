@@ -42,6 +42,7 @@ const permission = {
     periodDuration: 86400,
     justification: "Permission to transfer 10 USDC every day",
   },
+  isAdjustmentAllowed: true,
 };
 ```
 
@@ -80,6 +81,29 @@ const permission = {
     startTime: currentTime,
     justification: "Permission to use 0.1 USDC per second",
   },
+  isAdjustmentAllowed: true,
+};
+```
+
+### ERC-20 revocation permission
+
+Enables revoking an existing ERC-20 token allowance on behalf of the user.
+
+#### Parameters
+
+| Name            | Type     | Required | Description                                                            |
+| --------------- | -------- | -------- | ---------------------------------------------------------------------- |
+| `justification` | `string` | No       | A human-readable explanation of why the permission is being requested. |
+
+#### Example
+
+```typescript
+const permission = {
+  type: "erc20-token-revocation",
+  data: {
+    justification: "Permission to revoke ERC-20 token allowances",
+  },
+  isAdjustmentAllowed: true,
 };
 ```
 
@@ -115,6 +139,7 @@ const permission = {
     startTime: currentTime,
     justification: "Permission to use 0.001 ETH every day",
   },
+  isAdjustmentAllowed: true,
 };
 ```
 
@@ -153,5 +178,6 @@ const permission = {
     startTime: currentTime,
     justification: "Permission to use 0.0001 ETH per second",
   },
+  isAdjustmentAllowed: true,
 };
 ```
